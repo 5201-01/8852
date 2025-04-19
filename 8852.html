@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shadow Rise</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #0f0;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+    .terminal {
+      background: #111;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 20px #0f0;
+      text-align: center;
+    }
+    input[type="text"] {
+      background: #000;
+      border: 1px solid #0f0;
+      color: #0f0;
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-top: 1rem;
+      font-family: 'Courier New', Courier, monospace;
+      width: 80%;
+      max-width: 300px;
+    }
+    .hidden {
+      display: none;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .fade-out {
+      animation: fadeOut 6s forwards;
+    }
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+    .glitch {
+      font-weight: bold;
+      color: #0f0;
+      animation: glitch 1s infinite;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    @keyframes glitch {
+      0% { text-shadow: 1px 1px red; }
+      25% { text-shadow: -1px -1px blue; }
+      50% { text-shadow: 1px -1px lime; }
+      75% { text-shadow: -1px 1px yellow; }
+      100% { text-shadow: 1px 1px red; }
+    }
+    #stegoImg {
+      margin-top: 1rem;
+      max-width: 80%;
+      border: 1px solid #0f0;
+      box-shadow: 0 0 5px #0f0;
+    }
+    #unseenText {
+      margin-top: 0.5rem;
+      font-style: italic;
+      color: #0f0;
+      font-size: 0.8rem;
+    }
+    #devMessage {
+      color: #0f0;
+      text-align: left;
+      margin: 0.5rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      line-height: 1.3;
+    }
+    #binaryMessage {
+      font-size: 1rem;
+      letter-spacing: 1px;
+      margin: 0.5rem 0;
+      line-height: 1.2;
+      word-break: break-all;
+    }
+    #secretMessage {
+      margin-top: 0.5rem;
+      color: #0f0;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    #warningMessage {
+      margin-top: 0.3rem;
+      color: #f00;
+      font-style: italic;
+      font-size: 0.8rem;
+    }
+    #pressQ {
+      margin-top: 0.3rem;
+      color: #0f0;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.8rem;
+    }
+  </style>
+    <script>
+        // Block right click
+        document.addEventListener('contextmenu', e => e.preventDefault());// Block inspect and view source shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key.toUpperCase())) ||
+        (e.metaKey && e.altKey && e.key.toUpperCase() === 'I') || // macOS dev tools
+        (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+        (e.metaKey && e.key.toUpperCase() === 'U')
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    });
+    
+    // Prevent form resubmission/data persistence on refresh
+    window.addEventListener('beforeunload', function () {
+      sessionStorage.clear();
+    });
+    // Clear inputs when page loads/refreshes
+window.addEventListener('load', function() {
+  document.getElementById('firstAnswer').value = '';
+  document.getElementById('secondAnswer').value = '';
+});
+      </script>
+</head>
+<body>
+  <div class="terminal">
+    <div id="hint">
+      Speak my name, and I vanish.<br>
+      I'm heard in absence, never in presence.
+    </div>
+
+    <div id="riddle" class="hidden">
+      If you <strong>solve</strong> me, I no longer exist.<br>
+      If you <strong>know</strong> me, you cannot speak me.<br>
+      I <strong>am</strong> the question that ends all questions.<br>
+      What am I?
+      <br />
+      <input type="text" id="firstAnswer" placeholder="Enter your answer..." />
+      <div id="message" class="message"></div>
+    </div>
+
+    <div id="nextRiddle" class="hidden">
+      <br />
+      I am the <strong>silent twin</strong> of all that stands,<br>
+      The <strong>darker echo</strong> of light's commands.<br>
+      <strong>Kings</strong> and <strong> beggars </strong> bow to me alike,<br>
+      Yet grasp me not—I'll always <strong>strike</strong>.<br>
+      I dance with <strong>flames</strong> yet fear the sun,<br>
+      Grow tall at noon, by night undone. <br>
+      <strong>Speak my name</strong> and I take flight,<br>
+      What am I?
+      <br />
+      <input type="text" id="secondAnswer" placeholder="Enter your answer..." />
+      <div id="secondMessage" class="message"></div>
+
+      <div id="glitchMsg" class="glitch hidden">It's your turn... Isn't it?</div>
+      <img src="7741.jpg" id="stegoImg" class="hidden" alt="Stego Image" />
+      <div id="unseenText" class="hidden">Only those who see the unseen may proceed.</div>
+    </div>
+
+    <!-- Developer Path Elements -->
+    <div id="devMessage" class="hidden"></div>
+    <div id="binaryMessage" class="hidden"></div>
+    <div id="secretMessage" class="hidden"></div>
+    <div id="warningMessage" class="hidden">Next time...be careful</div>
+    <div id="pressQ" class="hidden">press Q</div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      document.getElementById('hint').classList.add('hidden');
+      document.getElementById('riddle').classList.remove('hidden');
+    }, 7000);
+
+    const firstInput = document.getElementById('firstAnswer');
+    const secondInput = document.getElementById('secondAnswer');
+    const message = document.getElementById('message');
+    const secondMessage = document.getElementById('secondMessage');
+    const nextRiddle = document.getElementById('nextRiddle');
+    const glitchMsg = document.getElementById('glitchMsg');
+    const stegoImg = document.getElementById('stegoImg');
+    const unseenText = document.getElementById('unseenText');
+    
+    // Developer path elements
+    const devMessage = document.getElementById('devMessage');
+    const binaryMessage = document.getElementById('binaryMessage');
+    const secretMessage = document.getElementById('secretMessage');
+    const warningMessage = document.getElementById('warningMessage');
+    const pressQ = document.getElementById('pressQ');
+
+    function checkForDevPath(input) {
+      if (input.trim() === 'Ziad52') {
+        // Hide all other elements
+        document.getElementById('hint').classList.add('hidden');
+        document.getElementById('riddle').classList.add('hidden');
+        document.getElementById('nextRiddle').classList.add('hidden');
+        
+        // Show developer message
+        devMessage.innerHTML = `// WARNING: This terminal session is now bound to Shadow.<br/>
+      // Proceed at your own risk.<br/>
+      <br/>
+      if (user.soul == null) {<br/>
+        console.error("⛥ ERROR: You lack the void to comprehend this path.");<br/>
+        process.exit(666);<br/>
+      }<br/>
+      <br/>
+      console.warn("☠  You have awakened something... ancient.");<br/>
+      console.warn("☠  The code you write here does not compile.");<br/>
+      console.warn("☠  It *whispers*.");<br/>
+      <br/>
+      setTimeout(() => {<br/>
+        console.log("\\n> Shadow whispers: 'You think in variables... but I dream in segfaults.'");<br/>
+        console.log("> The screen flickers. A single line appears:\\n");<br/>
+        console.log("> *'Solve me, and I will unmake your logic.'*\\n");<br/>
+      }, 3000);`;
+        devMessage.classList.remove('hidden');
+        
+        // After 5 seconds, show binary message
+        setTimeout(() => {
+          devMessage.classList.add('hidden');
+          showBinaryMessage();
+        }, 5000);
+        
+        return true;
+      }
+      return false;
+    }
+
+    function showBinaryMessage() {
+      binaryMessage.classList.remove('hidden');
+      
+      // Generate random binary sequence
+      let binaryStr = '';
+      for (let i = 0; i < 40; i++) {
+        binaryStr += Math.random() > 0.5 ? '0' : '1';
+      }
+      binaryMessage.textContent = binaryStr;
+      
+      // Flip bits every 100ms
+      const interval = setInterval(() => {
+        let newStr = '';
+        for (let i = 0; i < binaryStr.length; i++) {
+          newStr += binaryStr[i] === '0' ? '1' : '0';
+        }
+        binaryStr = newStr;
+        binaryMessage.textContent = binaryStr;
+      }, 100);
+      
+      // After 2 seconds, show secret message
+      setTimeout(() => {
+        clearInterval(interval);
+        binaryMessage.classList.add('hidden');
+        secretMessage.textContent = "Congratulations contestant, you have found a Secret Message '63287' ";
+        secretMessage.classList.remove('hidden');
+        warningMessage.classList.remove('hidden');
+        pressQ.classList.remove('hidden');
+      }, 2000);
+    }
+
+    function resetToOriginalPath() {
+      // Hide developer path elements
+      devMessage.classList.add('hidden');
+      binaryMessage.classList.add('hidden');
+      secretMessage.classList.add('hidden');
+      warningMessage.classList.add('hidden');
+      pressQ.classList.add('hidden');
+      
+      // Show the original path based on where we were
+      if (nextRiddle.classList.contains('hidden')) {
+        document.getElementById('riddle').classList.remove('hidden');
+      } else {
+        nextRiddle.classList.remove('hidden');
+      }
+    }
+
+    firstInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (checkForDevPath(firstInput.value)) return;
+        
+        const val = firstInput.value.trim().toLowerCase();
+        if (val === 'silence') {
+          message.textContent = 'Access Granted: In the Shadows, truth is born.';
+          nextRiddle.classList.remove('hidden');
+        } else {
+          message.textContent = 'Access Denied';
+          nextRiddle.classList.add('hidden');
+        }
+      }
+    });
+
+    secondInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (checkForDevPath(secondInput.value)) return;
+        
+        const val = secondInput.value.trim().toLowerCase();
+        if (val === 'shadow') {
+          secondMessage.textContent = "Congratulations, mortal—you've unmasked the dark, but now it knows your name.";
+          secondMessage.classList.remove('hidden');
+          stegoImg.classList.remove('hidden');
+          unseenText.classList.remove('hidden');
+
+          // Fade and replace after 3s
+          secondMessage.classList.add('fade-out');
+          setTimeout(() => {
+            secondMessage.classList.add('hidden');
+            glitchMsg.classList.remove('hidden');
+          }, 6000);
+        } else {
+          secondMessage.textContent = 'Access Denied';
+          stegoImg.classList.add('hidden');
+          unseenText.classList.add('hidden');
+          glitchMsg.classList.add('hidden');
+        }
+      }
+    });
+
+    // Listen for Q key press to return to original path
+    document.addEventListener('keydown', function(e) {
+      if (e.key.toLowerCase() === 'q' && !pressQ.classList.contains('hidden')) {
+        resetToOriginalPath();
+      }
+    });
+    
+    // Also make the "press Q" text clickable
+    pressQ.addEventListener('click', resetToOriginalPath);
+
+    // Clear inputs on page load
+window.onload = function() {
+  document.getElementById('firstAnswer').value = '';
+  document.getElementById('secondAnswer').value = '';
+};
+
+
+
+  </script>
+</body>
+</html>
